@@ -1,0 +1,214 @@
+---
+title: Loading Environment Files
+description: Learn how to load environment variables from .env files with proper precedence and NODE_ENV handling
+---
+
+## Overview
+
+Load Env provides a robust system for loading environment variables from `.env` files with proper precedence handling and `NODE_ENV` support. The library follows common conventions while adding type safety and error handling.
+
+## The loadEnv Function
+
+The `loadEnv()` function is the entry point for loading environment variables from `.env` files:
+
+```typescript
+import { loadEnv } from "@axel/load-env"
+
+await loadEnv()
+```
+
+### With Custom Path
+
+You can specify a custom directory for your `.env` files:
+
+```typescript
+import { loadEnv } from "@axel/load-env"
+
+await loadEnv({ path: "./config" })
+```
+
+## File Loading Order
+
+Environment variables are loaded with a specific precedence order. Files loaded **first** take priority over files loaded later:
+
+<Steps>
+  <Step title=".env.${NODE_ENV}.local">
+    Environment-specific local overrides (e.g., `.env.production.local`)
+    
+    These files should be gitignored and used for local development overrides.
+  </Step>
+  
+  <Step title=".env.${NODE_ENV}">
+    Environment-specific variables (e.g., `.env.production`, `.env.development`)
+    
+    These files contain environment-specific configuration that can be committed to version control.
+  </Step>
+  
+  <Step title=".env.local">
+    Local overrides for all environments
+    
+    This file should be gitignored and used for local development secrets.
+  </Step>
+  
+  <Step title=".env">
+    Default values for all environments
+    
+    This file contains safe defaults and can be committed to version control.
+  </Step>
+</Steps>
+
+<Note>
+Variables that already exist in `process.env` will **not** be overwritten by values from `.env` files. This allows you to override values via command line or system environment variables.
+</Note>
+
+## NODE_ENV Behavior
+
+The `NODE_ENV` environment variable controls which environment-specific files are loaded:
+
+```typescript
+// NODE_ENV must be set in the actual environment, not in .env files
+process.env.NODE_ENV = "production"
+
+await loadEnv()
+// Loads: .env.production.local, .env.production, .env.local, .env
+```
+
+### Default NODE_ENV
+
+If `NODE_ENV` is not set, it defaults to `development`:
+
+```typescript
+// No NODE_ENV set
+await loadEnv()
+// Loads: .env.development.local, .env.development, .env.local, .env
+```
+
+<Warning>
+`NODE_ENV` **must** be set in the actual environment before calling `loadEnv()`. It will not be picked up from `.env` files.
+</Warning>
+
+## How It Works
+
+Here's what happens when you call `loadEnv()`:
+
+<Accordion title="View implementation details">
+  The function:
+  
+  1. Reads `NODE_ENV` from `process.env` (defaults to `"development"`)
+  2. Constructs file paths based on the loading order
+  3. Reads all files in parallel using `Promise.all`
+  4. Parses each file with Node.js's built-in `parseEnv` utility
+  5. Merges results with earlier files taking precedence
+  6. Merges with existing `process.env` (existing values win)
+  7. Sets `NODE_ENV` explicitly in the final result
+  8. Updates `process.env` with the merged values
+  
+  From the source code:
+  
+  ```typescript
+  const NODE_ENV = process.env["NODE_ENV"]?.trim() || "development"
+
+  const files = [
+    `.env.${NODE_ENV}.local`,
+    `.env.${NODE_ENV}`,
+    ".env.local",
+    ".env",
+  ]
+
+  // ... read and parse files ...
+
+  const merged = Object.assign(parsed, process.env, { NODE_ENV })
+  process.env = merged
+  ```
+</Accordion>
+
+## Error Handling
+
+The library is designed to be resilient:
+
+### Missing Files
+
+Missing `.env` files are **not** treated as errors. The library will continue loading other files:
+
+```typescript
+// Works fine even if only .env exists
+await loadEnv()
+```
+
+### No Files Found
+
+If **no** environment variables can be loaded from any file, an error is thrown:
+
+```typescript
+try {
+  await loadEnv()
+} catch (error) {
+  console.error("Could not load any environment variables")
+  console.error(error.cause) // Array of errors from each file
+}
+```
+
+<Info>
+The error includes a `cause` property containing an array of all errors encountered while reading files, which is helpful for debugging.
+</Info>
+
+## Common Patterns
+
+### Load Early in Application
+
+Call `loadEnv()` as early as possible in your application:
+
+```typescript
+import { loadEnv } from "@axel/load-env"
+
+// Load environment variables first
+await loadEnv()
+
+// Then import modules that depend on env vars
+import { startServer } from "./server.js"
+import { connectDatabase } from "./database.js"
+
+await connectDatabase()
+await startServer()
+```
+
+### Multiple Environments
+
+Create different `.env` files for each environment:
+
+```bash
+# .env - defaults for all environments
+PORT=3000
+LOG_LEVEL=info
+
+# .env.development - development overrides
+DATABASE_URL=postgresql://localhost/myapp_dev
+DEBUG=true
+
+# .env.production - production configuration
+DATABASE_URL=postgresql://prod-server/myapp
+DEBUG=false
+
+# .env.local - local overrides (gitignored)
+PORT=4000
+```
+
+### Testing Configuration
+
+```typescript
+import { loadEnv } from "@axel/load-env"
+
+// Set NODE_ENV before loading
+process.env.NODE_ENV = "test"
+
+// Loads .env.test.local, .env.test, .env.local, .env
+await loadEnv()
+```
+
+## Next Steps
+
+Now that your environment variables are loaded, learn how to access them with type safety:
+
+<Card title="Environment Variables" icon="code" href="/guides/environment-variables">
+  Learn about type-safe functions for accessing environment variables
+</Card>

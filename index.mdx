@@ -1,97 +1,214 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Load Env Documentation"
+description: "Type-safe environment variable management for TypeScript"
+mode: "custom"
 ---
 
-## Setting up
+<div className="relative overflow-hidden bg-gradient-to-br from-[#0f1117] via-[#1a1d27] to-[#0f1117] dark:from-[#0f1117] dark:via-[#1a1d27] dark:to-[#0f1117] bg-white py-20">
+  <div className="max-w-6xl mx-auto px-6 lg:px-8">
+    <div className="text-center">
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+        Type-Safe Environment Variables
+      </h1>
+      <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
+        A standalone TypeScript implementation of Vite's loadEnv with type-safe parsing, Docker secrets support, and optional fallback values.
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <a
+          href="/quickstart"
+          className="inline-flex items-center px-6 py-3 bg-[#000000] hover:bg-[#1a1a1a] text-white font-medium rounded transition-colors"
+        >
+          Get Started
+        </a>
+        <a
+          href="/api/load-env"
+          className="inline-flex items-center px-6 py-3 bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-[#1a1d27] text-gray-900 dark:text-white font-medium rounded border border-gray-200 dark:border-[#27272a] transition-colors"
+        >
+          API Reference
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+    Quick Start
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get up and running with Load Env in three simple steps.
+  </p>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+  <Steps>
+    <Step title="Install the package">
+      Install Load Env using your preferred package manager.
 
-## Make it yours
+      <CodeGroup>
+      ```bash npm
+      npm install @natoboram/load_env
+      ```
+      ```bash yarn
+      yarn add @natoboram/load_env
+      ```
+      ```bash pnpm
+      pnpm add @natoboram/load_env
+      ```
+      ```bash jsr
+      pnpm add jsr:@natoboram/load-env
+      ```
+      </CodeGroup>
+    </Step>
 
-Design a docs site that looks great and empowers your users.
+    <Step title="Load environment variables">
+      Call `loadEnv()` at the start of your application to load variables from `.env` files.
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
+      ```typescript
+      import { loadEnv } from "@natoboram/load_env"
+
+      await loadEnv()
+      ```
+
+      <Note>
+        Environment variables are loaded in this order: `.env.${NODE_ENV}.local`, `.env.${NODE_ENV}`, `.env.local`, `.env`
+      </Note>
+    </Step>
+
+    <Step title="Access type-safe variables">
+      Use dedicated functions to parse environment variables with type safety.
+
+      ```typescript
+      import { envString, envInt, envBool, envUrl } from "@natoboram/load_env"
+
+      export const API_URL = envUrl("API_URL")
+      export const PORT = envInt("PORT", 3000)
+      export const DEBUG = envBool("DEBUG", false)
+      export const NODE_ENV = envString("NODE_ENV", "development")
+      ```
+    </Step>
+  </Steps>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+    Explore Documentation
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Learn how to use Load Env effectively in your TypeScript projects.
+  </p>
+
+  <CardGroup cols={2}>
     <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+      title="Loading Env Files"
+      icon="file-lines"
+      href="/guides/loading-env-files"
+    >
+      Understand how .env files are loaded and prioritized
+    </Card>
+    <Card
+      title="Environment Variables"
+      icon="gear"
+      href="/guides/environment-variables"
+    >
+      Parse environment variables with type safety
+    </Card>
+    <Card
+      title="Docker Secrets"
+      icon="lock"
+      href="/guides/docker-secrets"
+    >
+      Load secrets from files using Docker secrets
+    </Card>
+    <Card
+      title="Type Safety"
+      icon="shield-check"
+      href="/guides/type-safety"
+    >
+      Leverage TypeScript for bulletproof configuration
+    </Card>
+  </CardGroup>
+</div>
 
-## Create beautiful pages
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+    Key Features
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Everything you need for robust environment variable management.
+  </p>
 
-Everything you need to create world-class documentation.
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27]">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-[#0b0b0b] dark:bg-[#b9b9b9] flex items-center justify-center text-white dark:text-[#0f1117]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vite-Style Loading</h3>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Load environment variables from .env files with the same priority order as Vite
+      </p>
+    </div>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27]">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-[#0b0b0b] dark:bg-[#b9b9b9] flex items-center justify-center text-white dark:text-[#0f1117]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Type-Safe Parsing</h3>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Dedicated functions for booleans, dates, numbers, URLs, UUIDs, and enums with automatic validation
+      </p>
+    </div>
 
-## Need inspiration?
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27]">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-[#0b0b0b] dark:bg-[#b9b9b9] flex items-center justify-center text-white dark:text-[#0f1117]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Docker Secrets</h3>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Load secrets from files for secure Docker and Kubernetes deployments
+      </p>
+    </div>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-white dark:bg-[#1a1d27]">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-[#0b0b0b] dark:bg-[#b9b9b9] flex items-center justify-center text-white dark:text-[#0f1117]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Optional & Fallbacks</h3>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Support for optional variables and default fallback values for flexible configuration
+      </p>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="rounded-lg border border-gray-200 dark:border-[#27272a] bg-gradient-to-br from-white to-gray-50 dark:from-[#1a1d27] dark:to-[#0f1117] p-8 text-center">
+    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      Ready to get started?
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
+      Install Load Env and start managing your environment variables with type safety today.
+    </p>
+    <a
+      href="/quickstart"
+      className="inline-flex items-center px-6 py-3 bg-[#000000] hover:bg-[#1a1a1a] text-white font-medium rounded transition-colors"
+    >
+      View Quickstart Guide
+    </a>
+  </div>
+</div>

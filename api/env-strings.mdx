@@ -1,0 +1,59 @@
+---
+title: envStrings
+description: Obtains an environment variable as a comma-separated list of strings
+---
+
+## Signature
+
+```typescript
+function envStrings(key: string, fallback?: string[]): string[]
+```
+
+Obtains an environment variable as a comma-separated list of strings.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="fallback" type="string[]">
+  Optional fallback array if the environment variable is not set. If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="strings" type="string[]">
+  An array of strings parsed from the comma-separated environment variable or fallback
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to a comma-joined string of the fallback array if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Splits the string by commas
+- Trims whitespace from each individual string
+- Filters out empty strings after trimming
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+
+## Example
+
+```typescript
+import { envStrings } from "@natoboram/load_env"
+
+// With fallback
+export const ALLOWED_ORIGINS = envStrings("ALLOWED_ORIGINS", ["*"])
+
+// Without fallback (will throw if not set)
+export const CORS_DOMAINS = envStrings("CORS_DOMAINS")
+
+// Usage examples:
+// ALLOWED_ORIGINS="example1,example2,example3" → ["example1", "example2", "example3"]
+// ALLOWED_ORIGINS="a, b , c" → ["a", "b", "c"] (trimmed)
+// ALLOWED_ORIGINS="a,,b" → ["a", "b"] (empty strings filtered)
+// ALLOWED_ORIGINS not set → ["*"] (uses fallback)
+```

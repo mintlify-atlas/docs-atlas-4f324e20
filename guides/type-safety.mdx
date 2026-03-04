@@ -1,0 +1,495 @@
+---
+title: Type Safety
+description: Understand how Load Env enforces TypeScript types with automatic validation and compile-time safety
+---
+
+## Overview
+
+Load Env is built with TypeScript-first design, providing comprehensive type safety at both compile-time and runtime. Every function validates input and guarantees type-correct output, eliminating an entire class of configuration errors.
+
+## Compile-Time Type Safety
+
+TypeScript automatically infers the correct return types:
+
+```typescript
+import { envString, envInt, envBool, maybeEnvUrl } from "@axel/load-env"
+
+const name = envString("APP_NAME") // type: string
+const port = envInt("PORT") // type: number
+const debug = envBool("DEBUG") // type: boolean
+const url = maybeEnvUrl("API_URL") // type: URL | undefined
+```
+
+No type annotations needed - TypeScript knows the exact type returned by each function.
+
+## Runtime Type Validation
+
+Every function validates values at runtime and throws descriptive errors:
+
+<CodeGroup>
+```typescript String Validation
+import { envString } from "@axel/load-env"
+
+// Empty strings are rejected
+// APP_NAME=""
+try {
+  const name = envString("APP_NAME")
+} catch (error) {
+  // Error: $APP_NAME is missing
+}
+
+// Whitespace is trimmed
+// APP_NAME="  myapp  "
+const name = envString("APP_NAME")
+// name === "myapp"
+```
+
+```typescript Number Validation
+import { envInt, envFloat } from "@axel/load-env"
+
+// PORT=abc
+try {
+  const port = envInt("PORT")
+} catch (error) {
+  // TypeError: $PORT is not a number: abc
+}
+
+// Valid integer
+const port = envInt("PORT") // PORT=3000 -> 3000
+
+// Valid float
+const rate = envFloat("RATE") // RATE=1.5 -> 1.5
+```
+
+```typescript Boolean Validation
+import { envBool } from "@axel/load-env"
+
+// Accepts: true, false, 1, 0, yes, no, on, off
+const ci = envBool("CI") // CI=true -> true
+const debug = envBool("DEBUG") // DEBUG=1 -> true
+const feature = envBool("FEATURE") // FEATURE=yes -> true
+
+// Invalid boolean value
+// ENABLED=maybe
+try {
+  const enabled = envBool("ENABLED")
+} catch (error) {
+  // TypeError: ENABLED is not a boolean: maybe
+}
+```
+
+```typescript URL Validation
+import { envUrl } from "@axel/load-env"
+
+// Valid URL
+const api = envUrl("API_URL")
+// API_URL=https://api.example.com
+// Returns: URL object
+
+// Invalid URL
+// API_URL=not-a-url
+try {
+  const api = envUrl("API_URL")
+} catch (error) {
+  // TypeError: $API_URL is not a URL: not-a-url
+  console.error(error.cause) // Original parsing error
+}
+```
+</CodeGroup>
+
+## Enum Type Safety
+
+Enums provide both compile-time and runtime validation:
+
+```typescript
+import { envEnum } from "@axel/load-env"
+
+const LOG_LEVEL = envEnum(
+  "LOG_LEVEL",
+  ["debug", "info", "warn", "error"] as const,
+  "info",
+)
+
+// TypeScript knows the exact type:
+// type: "debug" | "info" | "warn" | "error"
+
+// Compile-time error:
+if (LOG_LEVEL === "trace") {
+  //                ^^^^^^^ Type error: "trace" is not assignable
+}
+
+// Runtime validation:
+// LOG_LEVEL=invalid
+try {
+  const level = envEnum(
+    "LOG_LEVEL",
+    ["debug", "info", "warn", "error"] as const,
+  )
+} catch (error) {
+  // TypeError: $LOG_LEVEL is not one of debug, info, warn, error: invalid
+}
+```
+
+<Note>
+The `as const` assertion is critical - it tells TypeScript to infer literal types instead of the general `string` type.
+</Note>
+
+## Optional vs Required Values
+
+The type system distinguishes between optional and required values:
+
+### Required Values
+
+```typescript
+import { envString, envInt } from "@axel/load-env"
+
+// Type: string (never undefined)
+const apiKey = envString("API_KEY")
+
+// Type: number (never undefined)
+const port = envInt("PORT")
+
+// Compile-time error:
+if (apiKey === undefined) {
+  //  ^^^^^^ Condition always false
+}
+```
+
+### Optional Values
+
+```typescript
+import { maybeEnvString, maybeEnvInt } from "@axel/load-env"
+
+// Type: string | undefined
+const customHeader = maybeEnvString("CUSTOM_HEADER")
+
+// Type: number | undefined
+const timeout = maybeEnvInt("TIMEOUT")
+
+// TypeScript requires checking:
+if (customHeader !== undefined) {
+  // TypeScript knows customHeader is string here
+  console.log(customHeader.toUpperCase())
+}
+
+// Or use nullish coalescing:
+const timeoutValue = timeout ?? 5000
+```
+
+### With Fallbacks
+
+```typescript
+import { envString, envInt } from "@axel/load-env"
+
+// Type: string (fallback ensures non-undefined)
+const nodeEnv = envString("NODE_ENV", "development")
+
+// Type: number
+const port = envInt("PORT", 3000)
+
+// No undefined check needed:
+console.log(nodeEnv.toUpperCase())
+```
+
+## UUID Type Safety
+
+UUID functions return branded `UUID` types:
+
+```typescript
+import type { UUID } from "node:crypto"
+import { envUuid } from "@axel/load-env"
+
+// Type: UUID (branded string type)
+const apiToken: UUID = envUuid("API_TOKEN")
+
+// Runtime validation ensures correct format:
+// API_TOKEN=not-a-uuid
+try {
+  const token = envUuid("API_TOKEN")
+} catch (error) {
+  // TypeError: $API_TOKEN is not a UUID: not-a-uuid
+}
+
+// Valid UUID format required:
+// API_TOKEN=550e8400-e29b-41d4-a716-446655440000
+const validToken = envUuid("API_TOKEN") // ✓
+```
+
+## Array Type Safety
+
+String arrays are properly typed:
+
+```typescript
+import { envStrings, maybeEnvStrings } from "@axel/load-env"
+
+// Type: string[]
+const origins = envStrings("ALLOWED_ORIGINS")
+
+// Type: string[] | undefined
+const features = maybeEnvStrings("FEATURE_FLAGS")
+
+// TypeScript array methods work:
+const hasWildcard = origins.includes("*")
+const featureCount = features?.length ?? 0
+```
+
+## Error Types
+
+Load Env throws two types of errors with different meanings:
+
+### Error (Missing Values)
+
+```typescript
+import { envString } from "@axel/load-env"
+
+try {
+  const value = envString("MISSING_VAR")
+} catch (error) {
+  if (error instanceof Error && error.name === "Error") {
+    // Variable is missing entirely
+    console.error(error.message) // $MISSING_VAR is missing
+  }
+}
+```
+
+### TypeError (Invalid Values)
+
+```typescript
+import { envInt } from "@axel/load-env"
+
+try {
+  const value = envInt("PORT")
+} catch (error) {
+  if (error instanceof TypeError) {
+    // Variable exists but has wrong type
+    console.error(error.message) // $PORT is not a number: abc
+    console.error(error.cause) // Original invalid value
+  }
+}
+```
+
+<Info>
+Use this distinction to provide better error messages: `Error` means configuration is missing, `TypeError` means configuration is invalid.
+</Info>
+
+## Type Validation Functions
+
+The library uses internal validation functions that you can understand from the source:
+
+<Accordion title="Boolean validation (toBool)">
+  ```typescript
+  // Accepts (case-insensitive):
+  // - true, false
+  // - 1, 0
+  // - yes, no
+  // - on, off
+  
+  export function toBool(key: string, value: string): boolean {
+    const lower = value.toLowerCase()
+    if (["true", "1", "yes", "on"].includes(lower)) return true
+    if (["false", "0", "no", "off"].includes(lower)) return false
+    throw new TypeError(`${key} is not a boolean: ${value}`)
+  }
+  ```
+</Accordion>
+
+<Accordion title="Enum validation (isEnum)">
+  ```typescript
+  export function isEnum<T extends string[]>(
+    value: string,
+    values: T,
+  ): value is T[number] {
+    return values.includes(value as T[number])
+  }
+  ```
+</Accordion>
+
+<Accordion title="UUID validation (isUuid)">
+  ```typescript
+  // Validates RFC 4122 UUID format
+  export function isUuid(value: unknown): value is UUID {
+    if (typeof value !== "string") return false
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  }
+  ```
+</Accordion>
+
+## Secret Type Safety
+
+Secret functions provide the same type safety as env functions:
+
+```typescript
+import { secretString, secretInt, maybeSecretBool } from "@axel/load-env"
+
+// Type: Promise<string>
+const apiKey = secretString("API_KEY")
+
+// Type: Promise<number>
+const maxRetries = secretInt("MAX_RETRIES")
+
+// Type: Promise<boolean | undefined>
+const debugMode = maybeSecretBool("DEBUG_MODE")
+
+// Await to get typed values:
+const key = await apiKey // type: string
+const retries = await maxRetries // type: number
+const debug = await debugMode // type: boolean | undefined
+```
+
+## Generic Type Patterns
+
+Common TypeScript patterns that work well:
+
+### Configuration Objects
+
+```typescript
+import { envString, envInt, envBool, envUrl } from "@axel/load-env"
+
+interface AppConfig {
+  nodeEnv: "development" | "production" | "test"
+  port: number
+  debug: boolean
+  databaseUrl: URL
+}
+
+export function loadConfig(): AppConfig {
+  return {
+    nodeEnv: envEnum(
+      "NODE_ENV",
+      ["development", "production", "test"] as const,
+      "development",
+    ),
+    port: envInt("PORT", 3000),
+    debug: envBool("DEBUG", false),
+    databaseUrl: envUrl("DATABASE_URL"),
+  }
+}
+
+// Type-safe configuration
+const config = loadConfig()
+config.port // type: number
+config.nodeEnv // type: "development" | "production" | "test"
+```
+
+### Discriminated Unions
+
+```typescript
+import { envEnum, envUrl, envString } from "@axel/load-env"
+
+const NODE_ENV = envEnum(
+  "NODE_ENV",
+  ["development", "production"] as const,
+  "development",
+)
+
+if (NODE_ENV === "production") {
+  // TypeScript knows this is production
+  const dbUrl = envUrl("DATABASE_URL") // Required in production
+} else {
+  // TypeScript knows this is development
+  const dbUrl = envUrl("DATABASE_URL", new URL("postgresql://localhost/dev"))
+}
+```
+
+### Conditional Types
+
+```typescript
+import { envString, maybeEnvString } from "@axel/load-env"
+
+type EnvValue<Required extends boolean> = Required extends true
+  ? string
+  : string | undefined
+
+function getEnv<R extends boolean>(
+  key: string,
+  required: R,
+): EnvValue<R> {
+  if (required) {
+    return envString(key) as EnvValue<R>
+  }
+  return maybeEnvString(key) as EnvValue<R>
+}
+
+const required = getEnv("API_KEY", true) // type: string
+const optional = getEnv("DEBUG", false) // type: string | undefined
+```
+
+## Best Practices
+
+### Export Typed Constants
+
+```typescript
+// config.ts
+import { envString, envInt, envEnum } from "@axel/load-env"
+
+export const NODE_ENV = envEnum(
+  "NODE_ENV",
+  ["development", "production", "test"] as const,
+  "development",
+) // type: "development" | "production" | "test"
+
+export const PORT = envInt("PORT", 3000) // type: number
+export const APP_NAME = envString("APP_NAME") // type: string
+```
+
+### Use Type Guards for Optional Values
+
+```typescript
+import { maybeEnvString } from "@axel/load-env"
+
+const apiKey = maybeEnvString("API_KEY")
+
+function requireApiKey(key: string | undefined): asserts key is string {
+  if (!key) {
+    throw new Error("API_KEY is required for this operation")
+  }
+}
+
+requireApiKey(apiKey)
+// TypeScript knows apiKey is string here
+console.log(apiKey.length)
+```
+
+### Validate at Boundaries
+
+```typescript
+import { envUrl, envString } from "@axel/load-env"
+
+// Load and validate early
+export const DATABASE_URL = envUrl("DATABASE_URL")
+export const JWT_SECRET = envString("JWT_SECRET")
+
+// If we get past initialization, these are guaranteed valid
+export async function connectDatabase() {
+  // DATABASE_URL is known to be a valid URL
+  return connect(DATABASE_URL)
+}
+```
+
+## Type Safety Benefits
+
+<CardGroup cols={2}>
+  <Card title="Catch Errors Early" icon="bug">
+    Type validation happens at startup, not during runtime when errors are costly
+  </Card>
+  
+  <Card title="No Type Casting" icon="shield">
+    No need for `as string` or `as number` - types are guaranteed
+  </Card>
+  
+  <Card title="Autocomplete" icon="code">
+    IDEs provide full autocomplete and inline documentation
+  </Card>
+  
+  <Card title="Refactor Safety" icon="rotate">
+    TypeScript catches breaking changes when refactoring configuration
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Card title="API Reference" icon="book" href="/api/load-env">
+  Explore the complete API reference for all available functions
+</Card>

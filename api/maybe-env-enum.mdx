@@ -1,0 +1,77 @@
+---
+title: maybeEnvEnum
+description: Load an optional environment variable constrained to specific values
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvEnum<const T extends string[]>(
+  key: string,
+  values: T,
+): T[number] | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="values" type="readonly string[]" required>
+  An array of allowed string values. Use `as const` for proper type inference.
+</ParamField>
+
+## Returns
+
+`T[number] | undefined` - One of the allowed enum values, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+Throws `TypeError` when:
+- The value is not one of the allowed values
+
+## Example
+
+```typescript
+import { maybeEnvEnum } from "@load-env/core"
+
+// Optional log level configuration
+export const LOG_LEVEL = maybeEnvEnum(
+  "LOG_LEVEL",
+  ["debug", "info", "warn", "error"] as const,
+)
+
+// Type is: "debug" | "info" | "warn" | "error" | undefined
+if (LOG_LEVEL) {
+  console.log(`Logging at level: ${LOG_LEVEL}`)
+} else {
+  console.log("Using default log level")
+}
+
+// Optional environment setting
+export const NODE_ENV = maybeEnvEnum(
+  "NODE_ENV",
+  ["development", "production", "test"] as const,
+)
+
+if (NODE_ENV === "production") {
+  // Enable production optimizations
+}
+```
+
+## When to Use
+
+Use `maybeEnvEnum` instead of `envEnum` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You have a default behavior when the variable is not set
+
+Use `envEnum` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

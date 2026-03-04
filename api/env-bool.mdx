@@ -1,0 +1,60 @@
+---
+title: envBool
+description: Obtains an environment variable as a boolean
+---
+
+## Signature
+
+```typescript
+function envBool(key: string, fallback?: boolean): boolean
+```
+
+Obtains an environment variable as a boolean.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="fallback" type="boolean">
+  Optional fallback value if the environment variable is not set. If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="boolean" type="boolean">
+  The parsed boolean value from the environment variable or fallback
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to the provided fallback value if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Parses the string value as a boolean
+- Throws a `TypeError` if the value cannot be parsed as a boolean
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+- Throws `TypeError` with message `"$KEY is not a boolean: VALUE"` when the value cannot be parsed as a boolean
+
+## Example
+
+```typescript
+import { envBool } from "@natoboram/load_env"
+
+// With fallback
+export const CI = envBool("CI", false)
+
+// Without fallback (will throw if not set)
+export const DEBUG = envBool("DEBUG")
+
+// Usage examples:
+// CI=true → true
+// CI=false → false
+// CI=1 → true
+// CI=0 → false
+// CI not set → false (uses fallback)
+```

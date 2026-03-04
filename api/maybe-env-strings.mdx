@@ -1,0 +1,84 @@
+---
+title: maybeEnvStrings
+description: Load an optional environment variable as a comma-separated list of strings
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvStrings(key: string): string[] | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`string[] | undefined` - An array of trimmed non-empty strings, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+The function:
+- Splits the value on commas
+- Trims whitespace from each item
+- Filters out empty strings
+- Returns an array of the remaining values
+
+## Example
+
+```typescript
+import { maybeEnvStrings } from "@load-env/core"
+
+// Optional CORS allowed origins
+export const ALLOWED_ORIGINS = maybeEnvStrings("ALLOWED_ORIGINS")
+
+if (ALLOWED_ORIGINS) {
+  console.log(`CORS enabled for: ${ALLOWED_ORIGINS.join(", ")}`)
+  app.use(cors({ origin: ALLOWED_ORIGINS }))
+} else {
+  console.log("CORS not configured")
+}
+
+// Optional feature flags
+export const FEATURE_FLAGS = maybeEnvStrings("FEATURE_FLAGS")
+
+function isFeatureEnabled(feature: string): boolean {
+  return FEATURE_FLAGS?.includes(feature) ?? false
+}
+
+// With default value
+export const ADMIN_EMAILS = maybeEnvStrings("ADMIN_EMAILS") ?? []
+```
+
+## Environment Variable Format
+
+```bash
+# Comma-separated values
+ALLOWED_ORIGINS=https://example.com,https://app.example.com,https://api.example.com
+
+# Spaces are trimmed
+FEATURE_FLAGS=feature1, feature2, feature3
+
+# Empty items are filtered out
+TAGS=tag1,,tag2,,,tag3
+# Results in: ["tag1", "tag2", "tag3"]
+```
+
+## When to Use
+
+Use `maybeEnvStrings` instead of `envStrings` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You can provide a default array or work without the list
+
+Use `envStrings` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

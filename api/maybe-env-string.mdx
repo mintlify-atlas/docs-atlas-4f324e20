@@ -1,0 +1,66 @@
+---
+title: maybeEnvString
+description: Load an optional environment variable as a string
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvString(key: string): string | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`string | undefined` - The trimmed string value, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+The returned string is trimmed of leading and trailing whitespace.
+
+## Example
+
+```typescript
+import { maybeEnvString } from "@load-env/core"
+
+// Optional environment setting
+export const NODE_ENV = maybeEnvString("NODE_ENV")
+
+if (NODE_ENV === "production") {
+  console.log("Running in production mode")
+} else {
+  console.log("Running in development mode")
+}
+
+// Optional API key
+export const OPTIONAL_API_KEY = maybeEnvString("OPTIONAL_API_KEY")
+
+if (OPTIONAL_API_KEY) {
+  // Enable optional feature
+  console.log("Optional feature enabled")
+}
+
+// With fallback
+export const APP_NAME = maybeEnvString("APP_NAME") ?? "My Application"
+```
+
+## When to Use
+
+Use `maybeEnvString` instead of `envString` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You can provide a default value or alternative behavior
+
+Use `envString` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

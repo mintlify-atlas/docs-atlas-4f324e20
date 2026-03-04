@@ -1,0 +1,65 @@
+---
+title: maybeEnvFloat
+description: Load an optional environment variable as a floating-point number
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvFloat(key: string): number | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`number | undefined` - The parsed floating-point number, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+Throws `TypeError` when:
+- The value cannot be parsed as a number
+
+## Example
+
+```typescript
+import { maybeEnvFloat } from "@load-env/core"
+
+// Optional zoom level
+export const ZOOM = maybeEnvFloat("ZOOM")
+
+const defaultZoom = 1.0
+const zoom = ZOOM ?? defaultZoom
+
+console.log(`Using zoom level: ${zoom}`)
+
+// Optional tax rate
+export const TAX_RATE = maybeEnvFloat("TAX_RATE")
+
+function calculateTotal(subtotal: number): number {
+  if (TAX_RATE !== undefined) {
+    return subtotal * (1 + TAX_RATE)
+  }
+  return subtotal
+}
+```
+
+## When to Use
+
+Use `maybeEnvFloat` instead of `envFloat` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You have a default value or fallback logic
+
+Use `envFloat` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

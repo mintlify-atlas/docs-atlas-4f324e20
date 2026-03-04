@@ -1,0 +1,90 @@
+---
+title: Installation
+description: Install @natoboram/load_env via npm, yarn, pnpm, or JSR
+---
+
+`@natoboram/load_env` is available on multiple package registries for your convenience.
+
+## Package Managers
+
+Choose your preferred package manager to install Load Env:
+
+<CodeGroup>
+
+```bash npm
+npm install @natoboram/load_env
+```
+
+```bash yarn
+yarn add @natoboram/load_env
+```
+
+```bash pnpm
+pnpm add @natoboram/load_env
+```
+
+```bash jsr
+pnpm add jsr:@natoboram/load-env
+```
+
+</CodeGroup>
+
+<Note>
+  When using JSR, note that the package name uses a hyphen: `@natoboram/load-env`
+</Note>
+
+## Requirements
+
+<Info>
+  Load Env requires **Node.js 22.12 or higher**
+</Info>
+
+The library is written in TypeScript and includes full type definitions. No additional type packages are needed.
+
+## Available Registries
+
+Load Env is published to multiple registries:
+
+- **npm**: [npmjs.com/package/@natoboram/load_env](https://www.npmjs.com/package/@natoboram/load_env)
+- **JSR**: [jsr.io/@natoboram/load-env](https://jsr.io/@natoboram/load-env)
+- **GitHub Packages**: Available for GitHub-authenticated installs
+- **GitHub Releases**: Pre-built packages available in [releases](https://github.com/NatoBoram/load_env/releases)
+
+## Verify Installation
+
+After installation, verify that Load Env is working correctly:
+
+```typescript
+import { loadEnv } from "@natoboram/load_env"
+
+console.log(typeof loadEnv) // Should output: "function"
+```
+
+If you're using JSR:
+
+```typescript
+import { loadEnv } from "jsr:@natoboram/load-env"
+
+console.log(typeof loadEnv) // Should output: "function"
+```
+
+## TypeScript Configuration
+
+Load Env is written in TypeScript and includes type definitions. Ensure your `tsconfig.json` is configured for ES modules:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022"]
+  }
+}
+```
+
+## Next Steps
+
+<Card title="Quick Start" icon="rocket" href="/quickstart">
+  Learn how to use Load Env with a complete working example
+</Card>

@@ -1,0 +1,64 @@
+---
+title: envUuid
+description: Obtains an environment variable as a UUID
+---
+
+## Signature
+
+```typescript
+import type { UUID } from "node:crypto"
+
+function envUuid(key: string, fallback?: UUID): UUID
+```
+
+Obtains an environment variable as a UUID.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="fallback" type="UUID">
+  Optional fallback UUID string if the environment variable is not set. If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="UUID" type="UUID">
+  The validated UUID string from the environment variable or fallback
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to the string representation of the fallback UUID if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Validates that the string is a valid UUID format
+- Throws a `TypeError` if the value is not a valid UUID
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+- Throws `TypeError` with message `"$KEY is not a UUID: VALUE"` when the value is not a valid UUID format
+
+## Example
+
+```typescript
+import { envUuid } from "@natoboram/load_env"
+import type { UUID } from "node:crypto"
+
+// With fallback
+export const SESSION_ID: UUID = envUuid(
+  "SESSION_ID",
+  "579e5114-ae99-4c41-a0d1-ea061ac815f5"
+)
+
+// Without fallback (will throw if not set)
+export const TOKEN: UUID = envUuid("TOKEN")
+
+// Usage examples:
+// TOKEN="eb4cd2db-7250-40b2-948f-436b628ee8e2" → "eb4cd2db-7250-40b2-948f-436b628ee8e2"
+// TOKEN="invalid-uuid" → throws TypeError
+// TOKEN not set → "579e5114-ae99-4c41-a0d1-ea061ac815f5" (uses fallback)
+```

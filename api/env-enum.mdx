@@ -1,0 +1,74 @@
+---
+title: envEnum
+description: Obtains an environment variable constrained to an enumerated list of string values
+---
+
+## Signature
+
+```typescript
+function envEnum<const T extends string[]>(
+  key: string,
+  values: T,
+  fallback?: T[number],
+): T[number]
+```
+
+Obtains an environment variable constrained to an enumerated list of string values.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="values" type="T extends string[]" required>
+  An array of allowed string values. Use `as const` for type safety.
+</ParamField>
+
+<ParamField path="fallback" type="T[number]">
+  Optional fallback value (must be one of the allowed values). If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="value" type="T[number]">
+  One of the allowed string values from the enum
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to the provided fallback value if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Validates that the value is one of the allowed enum values
+- Throws a `TypeError` if the value is not in the allowed list
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+- Throws `TypeError` with message `"$KEY is not one of value1, value2, value3: ACTUAL_VALUE"` when the value is not in the allowed list
+
+## Example
+
+```typescript
+import { envEnum } from "@natoboram/load_env"
+
+// With fallback
+export const NODE_ENV = envEnum(
+  "NODE_ENV",
+  ["development", "production", "test"] as const,
+  "development",
+)
+
+// Without fallback (will throw if not set)
+export const LOG_LEVEL = envEnum(
+  "LOG_LEVEL",
+  ["debug", "info", "warn", "error"] as const,
+)
+
+// Usage examples:
+// NODE_ENV=production → "production"
+// NODE_ENV=development → "development"
+// NODE_ENV=staging → throws TypeError (not in allowed list)
+// NODE_ENV not set → "development" (uses fallback)
+```

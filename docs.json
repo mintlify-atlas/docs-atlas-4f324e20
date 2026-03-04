@@ -1,122 +1,113 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Load Env",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#7c7c7b",
+    "light": "#0b0b0b",
+    "dark": "#b9b9b9"
   },
-  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "https://media.brand.dev/8103eac7-7ba9-49c2-adda-48cf53b26a73.png",
+    "dark": "https://media.brand.dev/8103eac7-7ba9-49c2-adda-48cf53b26a73.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/NatoBoram/load_env"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/NatoBoram/load_env"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Guides",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/loading-env-files",
+              "guides/environment-variables",
+              "guides/docker-secrets",
+              "guides/type-safety"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core",
             "pages": [
-              "api-reference/introduction"
+              "api/load-env"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Environment Variables",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/env-bool",
+              "api/env-date",
+              "api/env-enum",
+              "api/env-float",
+              "api/env-int",
+              "api/env-string",
+              "api/env-strings",
+              "api/env-url",
+              "api/env-uuid"
+            ]
+          },
+          {
+            "group": "Optional Variables",
+            "pages": [
+              "api/maybe-env-bool",
+              "api/maybe-env-date",
+              "api/maybe-env-enum",
+              "api/maybe-env-float",
+              "api/maybe-env-int",
+              "api/maybe-env-string",
+              "api/maybe-env-strings",
+              "api/maybe-env-url",
+              "api/maybe-env-uuid"
+            ]
+          },
+          {
+            "group": "Secrets",
+            "pages": [
+              "api/secret-bool",
+              "api/secret-date",
+              "api/secret-enum",
+              "api/secret-float",
+              "api/secret-int",
+              "api/secret-string",
+              "api/secret-strings",
+              "api/secret-url",
+              "api/secret-uuid",
+              "api/maybe-secret-bool",
+              "api/maybe-secret-date",
+              "api/maybe-secret-enum",
+              "api/maybe-secret-float",
+              "api/maybe-secret-int",
+              "api/maybe-secret-string",
+              "api/maybe-secret-strings",
+              "api/maybe-secret-url",
+              "api/maybe-secret-uuid"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

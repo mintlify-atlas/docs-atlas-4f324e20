@@ -1,0 +1,56 @@
+---
+title: maybeEnvBool
+description: Load an optional environment variable as a boolean
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvBool(key: string): boolean | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`boolean | undefined` - The parsed boolean value, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+Throws `TypeError` when:
+- The value cannot be parsed as a boolean
+
+## Example
+
+```typescript
+import { maybeEnvBool } from "@load-env/core"
+
+// Variable may or may not be set
+export const CI = maybeEnvBool("CI")
+
+if (CI) {
+  console.log("Running in CI environment")
+} else {
+  console.log("CI not enabled or not set")
+}
+```
+
+## When to Use
+
+Use `maybeEnvBool` instead of `envBool` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You need to check if a variable exists before using it
+
+Use `envBool` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

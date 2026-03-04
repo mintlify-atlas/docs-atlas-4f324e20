@@ -1,0 +1,162 @@
+---
+title: "loadEnv"
+description: "Load environment variables from .env files"
+---
+
+## Function Signature
+
+```typescript
+async function loadEnv(options?: LoadEnvOptions): Promise<LoadedEnv>
+```
+
+Loads environment variables from `.env` files in the specified directory. `NODE_ENV` must be set in the environment and will not be picked up from the filesystem.
+
+If `NODE_ENV` is not set, it defaults to `development`.
+
+## Parameters
+
+<ParamField path="options" type="LoadEnvOptions" optional>
+  Configuration options for loading environment variables.
+
+  <Expandable title="properties">
+    <ParamField path="path" type="string" optional>
+      Directory path where `.env` files are located. If not specified, defaults to the current working directory.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Return Value
+
+<ResponseField name="LoadedEnv" type="LoadedEnv">
+  An object extending `NodeJS.ProcessEnv` with all loaded environment variables, including a guaranteed `NODE_ENV` property.
+
+  <Expandable title="properties">
+    <ResponseField name="NODE_ENV" type="string" required>
+      The current Node.js environment (e.g., "development", "production", "test").
+    </ResponseField>
+    <ResponseField name="[key: string]" type="string | undefined">
+      All other environment variables loaded from `.env` files and the system environment.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Loading Order
+
+Environment variables are loaded in the following priority order (first to last):
+
+1. `.env.${NODE_ENV}.local` - Environment-specific local overrides
+2. `.env.${NODE_ENV}` - Environment-specific variables
+3. `.env.local` - Local overrides for all environments
+4. `.env` - Default environment variables
+
+Variables loaded later in the sequence override earlier ones. After loading from files, existing `process.env` variables take precedence, and finally `NODE_ENV` is set.
+
+## Error Handling
+
+The function throws an error if:
+
+- No environment variables could be loaded from any `.env` file
+- All file reads failed (files don't exist or are inaccessible)
+
+The error includes a `cause` property containing an array of all errors encountered during file reading.
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { loadEnv } from "@natoboram/load_env"
+
+await loadEnv()
+
+// Environment variables are now available in process.env
+console.log(process.env.DATABASE_URL)
+```
+
+### Custom Directory
+
+```typescript
+import { loadEnv } from "@natoboram/load_env"
+
+await loadEnv({ path: "./config" })
+
+// Loads .env files from the ./config directory
+```
+
+### With Type-Safe Accessors
+
+```typescript
+import { loadEnv, envString, envInt, envBool } from "@natoboram/load_env"
+
+await loadEnv()
+
+export const DATABASE_URL = envString("DATABASE_URL")
+export const PORT = envInt("PORT", 3000)
+export const DEBUG = envBool("DEBUG", false)
+```
+
+### Setting NODE_ENV
+
+```typescript
+// Set NODE_ENV before calling loadEnv
+process.env.NODE_ENV = "production"
+
+await loadEnv()
+
+// Will load:
+// - .env.production.local
+// - .env.production
+// - .env.local
+// - .env
+```
+
+## Example .env Files
+
+### `.env`
+
+```bash
+DATABASE_URL=postgresql://localhost:5432/myapp
+PORT=3000
+DEBUG=false
+```
+
+### `.env.development`
+
+```bash
+DEBUG=true
+DATABASE_URL=postgresql://localhost:5432/myapp_dev
+```
+
+### `.env.production`
+
+```bash
+DATABASE_URL=postgresql://prod-server:5432/myapp
+DEBUG=false
+LOG_LEVEL=info
+```
+
+### `.env.local`
+
+```bash
+# Local overrides (not committed to version control)
+DATABASE_URL=postgresql://localhost:5432/my_local_db
+```
+
+## Best Practices
+
+1. **Call Early**: Call `loadEnv()` at the very beginning of your application before accessing any environment variables.
+
+2. **Don't Commit Secrets**: Add `.env.local` and `.env.*.local` files to `.gitignore` to avoid committing sensitive data.
+
+3. **Set NODE_ENV**: Always set `NODE_ENV` in your environment before running your application, not in `.env` files.
+
+4. **Use Type-Safe Accessors**: Use the provided type-safe accessor functions (`envString`, `envInt`, etc.) instead of directly accessing `process.env`.
+
+5. **Provide Defaults**: Use default values for non-critical configuration to make your application more resilient.
+
+## Related Functions
+
+- [envString](/api/env-string) - Parse string environment variables
+- [envInt](/api/env-int) - Parse integer environment variables
+- [envBool](/api/env-bool) - Parse boolean environment variables
+- [envUrl](/api/env-url) - Parse URL environment variables

@@ -1,0 +1,61 @@
+---
+title: envInt
+description: Obtains an environment variable as an integer
+---
+
+## Signature
+
+```typescript
+function envInt(key: string, fallback?: number): number
+```
+
+Obtains an environment variable as an integer.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="fallback" type="number">
+  Optional fallback value if the environment variable is not set. If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="number" type="number">
+  The parsed integer from the environment variable or fallback
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to the string representation of the fallback number if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Parses the string value using `parseInt()`
+- Allows values like `0` (falsy but valid numbers)
+- Throws a `TypeError` if the value cannot be parsed as a number (results in NaN)
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+- Throws `TypeError` with message `"$KEY is not a number: VALUE"` when the value cannot be parsed as a number
+
+## Example
+
+```typescript
+import { envInt } from "@natoboram/load_env"
+
+// With fallback
+export const PORT = envInt("PORT", 3000)
+
+// Without fallback (will throw if not set)
+export const MAX_CONNECTIONS = envInt("MAX_CONNECTIONS")
+
+// Usage examples:
+// PORT=42 → 42
+// PORT=0 → 0 (valid)
+// PORT=8080 → 8080
+// PORT=3.14 → 3 (parsed as integer, decimal truncated)
+// PORT not set → 3000 (uses fallback)
+```

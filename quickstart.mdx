@@ -1,80 +1,278 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get started with Load Env in minutes with type-safe environment variables
 ---
 
-## Get started in three steps
+This guide will help you get up and running with Load Env quickly.
 
-Get your documentation site running locally and make your first customization.
+## Basic Setup
 
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Create .env file">
+    Create a `.env` file in your project root:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash .env
+    PORT=3000
+    DATABASE_URL=postgresql://localhost:5432/mydb
+    DEBUG=true
+    API_KEY=your-secret-key
+    ```
+  </Step>
+  
+  <Step title="Load environment variables">
+    Import and call `loadEnv()` at the start of your application:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```typescript index.ts
+    import { loadEnv } from "@natoboram/load_env"
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    // Load .env files based on NODE_ENV
+    await loadEnv()
+    ```
+  </Step>
+  
+  <Step title="Access variables with type safety">
+    Use type-safe functions to access your environment variables:
+    
+    ```typescript config.ts
+    import { envInt, envString, envBool } from "@natoboram/load_env"
+    
+    export const PORT = envInt("PORT", 3000)
+    export const DATABASE_URL = envString("DATABASE_URL")
+    export const DEBUG = envBool("DEBUG", false)
+    export const API_KEY = envString("API_KEY")
+    ```
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Complete Example
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Here's a complete example showing all the type-safe functions:
 
-### Step 3: Go live
+```typescript config.ts
+import {
+  loadEnv,
+  envBool,
+  envString,
+  envInt,
+  envFloat,
+  envDate,
+  envUrl,
+  envUuid,
+  envEnum,
+  envStrings,
+} from "@natoboram/load_env"
+import type { UUID } from "node:crypto"
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+// Load environment variables first
+await loadEnv()
 
-## Next steps
+// Required variables (will throw if missing)
+export const PORT = envInt("PORT", 3000)
+export const DATABASE_URL = envUrl("DATABASE_URL")
+export const API_KEY = envString("API_KEY")
 
-Now that you have your docs running, explore these key features:
+// Boolean variables
+export const DEBUG = envBool("DEBUG", false)
+export const ENABLE_LOGGING = envBool("ENABLE_LOGGING", true)
+
+// Numeric variables
+export const MAX_CONNECTIONS = envInt("MAX_CONNECTIONS", 100)
+export const TIMEOUT_SECONDS = envFloat("TIMEOUT_SECONDS", 30.5)
+
+// Date variables
+export const START_DATE = envDate("START_DATE", new Date())
+
+// UUID variables
+export const SERVICE_ID = envUuid("SERVICE_ID")
+
+// Enum variables (constrained to specific values)
+export const NODE_ENV = envEnum(
+  "NODE_ENV",
+  ["development", "production", "test"] as const,
+  "development"
+)
+
+// Array of strings (comma-separated)
+export const ALLOWED_ORIGINS = envStrings(
+  "ALLOWED_ORIGINS",
+  ["http://localhost:3000"]
+)
+```
+
+## Optional Variables
+
+Use the `maybe*` variants for optional environment variables:
+
+```typescript
+import {
+  maybeEnvString,
+  maybeEnvInt,
+  maybeEnvBool,
+  maybeEnvUrl,
+} from "@natoboram/load_env"
+
+// These return undefined if not set
+export const OPTIONAL_API_KEY = maybeEnvString("OPTIONAL_API_KEY")
+export const OPTIONAL_PORT = maybeEnvInt("OPTIONAL_PORT")
+export const OPTIONAL_DEBUG = maybeEnvBool("OPTIONAL_DEBUG")
+export const OPTIONAL_URL = maybeEnvUrl("OPTIONAL_URL")
+
+// Use with defaults
+const port = OPTIONAL_PORT ?? 3000
+const debug = OPTIONAL_DEBUG ?? false
+```
+
+## Environment-Specific Files
+
+Load Env automatically loads the correct `.env` files based on `NODE_ENV`:
+
+<CodeGroup>
+
+```bash .env
+# Loaded in all environments
+APP_NAME=MyApp
+DEFAULT_LOCALE=en
+```
+
+```bash .env.development
+# Only loaded when NODE_ENV=development
+DEBUG=true
+DATABASE_URL=postgresql://localhost:5432/myapp_dev
+```
+
+```bash .env.production
+# Only loaded when NODE_ENV=production
+DEBUG=false
+DATABASE_URL=postgresql://db.example.com:5432/myapp
+```
+
+```bash .env.local
+# Loaded in all environments (not committed to git)
+# Override any variables for local development
+API_KEY=local-dev-key
+```
+
+</CodeGroup>
+
+<Tip>
+  Add `.env*.local` files to your `.gitignore` to keep local overrides out of version control
+</Tip>
+
+## Custom .env Path
+
+By default, Load Env looks for `.env` files in the current directory. You can specify a custom path:
+
+```typescript
+import { loadEnv } from "@natoboram/load_env"
+
+await loadEnv({ path: "./config" })
+```
+
+## Type Definitions
+
+Here are the type signatures for the main functions:
+
+```typescript
+// Required variables with optional fallback
+function envString(key: string, fallback?: string): string
+function envInt(key: string, fallback?: number): number
+function envFloat(key: string, fallback?: number): number
+function envBool(key: string, fallback?: boolean): boolean
+function envDate(key: string, fallback?: Date): Date
+function envUrl(key: string, fallback?: URL): URL
+function envUuid(key: string, fallback?: UUID): UUID
+function envEnum<T extends string[]>(
+  key: string,
+  values: T,
+  fallback?: T[number]
+): T[number]
+function envStrings(key: string, fallback?: string[]): string[]
+
+// Optional variables (return undefined if not set)
+function maybeEnvString(key: string): string | undefined
+function maybeEnvInt(key: string): number | undefined
+function maybeEnvFloat(key: string): number | undefined
+function maybeEnvBool(key: string): boolean | undefined
+function maybeEnvDate(key: string): Date | undefined
+function maybeEnvUrl(key: string): URL | undefined
+function maybeEnvUuid(key: string): UUID | undefined
+function maybeEnvEnum<T extends string[]>(
+  key: string,
+  values: T
+): T[number] | undefined
+function maybeEnvStrings(key: string): string[] | undefined
+```
+
+## Working with Secrets
+
+Load Env supports loading secrets from the filesystem, which is useful for Docker Compose secrets:
+
+```typescript
+import { secretString, secretInt, maybeSecretString } from "@natoboram/load_env"
+
+// Load secrets from filesystem
+// The env var should contain the path to the secret file
+export const DB_PASSWORD = await secretString("DB_PASSWORD")
+export const API_TOKEN = await secretString("API_TOKEN")
+
+// Optional secrets
+export const OPTIONAL_SECRET = await maybeSecretString("OPTIONAL_SECRET")
+
+// With fallback
+export const SECRET_KEY = await secretString("SECRET_KEY", "default-key")
+```
+
+<Info>
+  Secret functions are async and must be awaited. The environment variable should contain the **path** to a file containing the secret value.
+</Info>
+
+### Docker Compose Example
+
+```yaml docker-compose.yml
+services:
+  app:
+    image: myapp
+    environment:
+      - DB_PASSWORD=/run/secrets/db_password
+    secrets:
+      - db_password
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+```
+
+Learn more:
+- [Manage secrets securely in Docker Compose](https://docs.docker.com/compose/how-tos/use-secrets)
+- [Docker Compose Secrets Reference](https://docs.docker.com/reference/compose-file/secrets)
+
+## Error Handling
+
+Load Env throws descriptive errors when variables are missing or invalid:
+
+```typescript
+import { envInt, envUrl } from "@natoboram/load_env"
+
+try {
+  const port = envInt("PORT") // Throws if PORT is not set
+  const url = envUrl("API_URL") // Throws if API_URL is not a valid URL
+} catch (error) {
+  console.error("Configuration error:", error.message)
+  process.exit(1)
+}
+```
+
+<Warning>
+  Required functions (without the `maybe` prefix) will throw an error if the environment variable is not set or cannot be parsed correctly.
+</Warning>
+
+## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="API Reference" icon="book" href="/api/load-env">
+    Explore all available functions and their usage
+  </Card>
+  <Card title="Guides" icon="book-open" href="/guides/loading-env-files">
+    Learn about loading .env files and advanced usage
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

@@ -1,0 +1,421 @@
+---
+title: Environment Variables
+description: Access environment variables with type safety using specialized functions for strings, numbers, booleans, URLs, and more
+---
+
+## Overview
+
+Load Env provides type-safe functions for accessing environment variables with automatic validation and optional fallback values. Each function ensures the value matches the expected type and throws descriptive errors when validation fails.
+
+## Available Functions
+
+All functions follow the pattern `env<Type>(key, fallback?)` and `maybeEnv<Type>(key)`:
+
+- **env*** functions require a value (throws if missing)
+- **maybeEnv*** functions return `undefined` if missing
+- Both support optional fallback values
+
+## String Values
+
+### envString
+
+Read a required string environment variable:
+
+```typescript
+import { envString } from "@axel/load-env"
+
+// Throws if NODE_ENV is missing or empty
+export const NODE_ENV = envString("NODE_ENV")
+
+// With fallback
+export const NODE_ENV = envString("NODE_ENV", "development")
+```
+
+### maybeEnvString
+
+Read an optional string environment variable:
+
+```typescript
+import { maybeEnvString } from "@axel/load-env"
+
+// Returns string | undefined
+export const CUSTOM_HEADER = maybeEnvString("CUSTOM_HEADER")
+
+if (CUSTOM_HEADER) {
+  console.log(`Using custom header: ${CUSTOM_HEADER}`)
+}
+```
+
+## Boolean Values
+
+### envBool
+
+Read a required boolean environment variable:
+
+```typescript
+import { envBool } from "@axel/load-env"
+
+// Accepts: true, false, 1, 0, yes, no, on, off (case insensitive)
+export const CI = envBool("CI", false)
+export const DEBUG = envBool("DEBUG")
+```
+
+<Info>
+Accepted boolean values: `true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off` (case-insensitive)
+</Info>
+
+### maybeEnvBool
+
+Read an optional boolean environment variable:
+
+```typescript
+import { maybeEnvBool } from "@axel/load-env"
+
+export const ENABLE_FEATURE = maybeEnvBool("ENABLE_FEATURE")
+
+if (ENABLE_FEATURE) {
+  console.log("Feature enabled")
+}
+```
+
+## Numeric Values
+
+### envInt
+
+Read a required integer environment variable:
+
+```typescript
+import { envInt } from "@axel/load-env"
+
+export const PORT = envInt("PORT", 3000)
+export const MAX_CONNECTIONS = envInt("MAX_CONNECTIONS")
+```
+
+### envFloat
+
+Read a required floating-point number:
+
+```typescript
+import { envFloat } from "@axel/load-env"
+
+export const ZOOM = envFloat("ZOOM", 1.0)
+export const RATE_LIMIT = envFloat("RATE_LIMIT")
+```
+
+### maybeEnvInt and maybeEnvFloat
+
+Read optional numeric environment variables:
+
+```typescript
+import { maybeEnvInt, maybeEnvFloat } from "@axel/load-env"
+
+export const TIMEOUT = maybeEnvInt("TIMEOUT") ?? 5000
+export const SCALE = maybeEnvFloat("SCALE") ?? 1.0
+```
+
+## Enumerated Values
+
+### envEnum
+
+Constrain values to a specific set of strings:
+
+```typescript
+import { envEnum } from "@axel/load-env"
+
+export const NODE_ENV = envEnum(
+  "NODE_ENV",
+  ["development", "production", "test"] as const,
+  "development",
+)
+
+export const LOG_LEVEL = envEnum(
+  "LOG_LEVEL",
+  ["debug", "info", "warn", "error"] as const,
+)
+```
+
+<Note>
+The `as const` assertion ensures TypeScript infers the exact string literal types, not just `string`.
+</Note>
+
+### maybeEnvEnum
+
+Read an optional enumerated value:
+
+```typescript
+import { maybeEnvEnum } from "@axel/load-env"
+
+export const LOG_LEVEL = maybeEnvEnum(
+  "LOG_LEVEL",
+  ["debug", "info", "warn", "error"] as const,
+)
+
+// Type: "debug" | "info" | "warn" | "error" | undefined
+```
+
+## URL Values
+
+### envUrl
+
+Read a required URL environment variable:
+
+```typescript
+import { envUrl } from "@axel/load-env"
+
+export const DATABASE_URL = envUrl("DATABASE_URL")
+export const API_URL = envUrl("API_URL", new URL("http://localhost"))
+
+// Use as a URL object
+console.log(DATABASE_URL.hostname)
+console.log(DATABASE_URL.pathname)
+```
+
+### maybeEnvUrl
+
+Read an optional URL environment variable:
+
+```typescript
+import { maybeEnvUrl } from "@axel/load-env"
+
+export const WEBHOOK_URL = maybeEnvUrl("WEBHOOK_URL")
+
+if (WEBHOOK_URL) {
+  await fetch(WEBHOOK_URL, { method: "POST", body: data })
+}
+```
+
+## Date Values
+
+### envDate
+
+Read a required date environment variable:
+
+```typescript
+import { envDate } from "@axel/load-env"
+
+// Accepts any format parseable by new Date()
+export const START_DATE = envDate("START_DATE")
+export const DEPLOYMENT_DATE = envDate("DEPLOYMENT_DATE", new Date())
+```
+
+### maybeEnvDate
+
+Read an optional date environment variable:
+
+```typescript
+import { maybeEnvDate } from "@axel/load-env"
+
+export const END_DATE = maybeEnvDate("END_DATE")
+
+if (END_DATE && new Date() > END_DATE) {
+  console.log("Campaign has ended")
+}
+```
+
+## UUID Values
+
+### envUuid
+
+Read a required UUID environment variable:
+
+```typescript
+import { envUuid } from "@axel/load-env"
+
+// Validates UUID format
+export const API_TOKEN = envUuid("API_TOKEN")
+export const TENANT_ID = envUuid("TENANT_ID")
+```
+
+### maybeEnvUuid
+
+Read an optional UUID environment variable:
+
+```typescript
+import { maybeEnvUuid } from "@axel/load-env"
+
+export const REQUEST_ID = maybeEnvUuid("REQUEST_ID")
+```
+
+## Array Values
+
+### envStrings
+
+Read a comma-separated list of strings:
+
+```typescript
+import { envStrings } from "@axel/load-env"
+
+// ALLOWED_ORIGINS=https://example.com,https://app.example.com
+export const ALLOWED_ORIGINS = envStrings("ALLOWED_ORIGINS", ["*"])
+
+// Values are automatically trimmed and empty strings filtered
+// "a, b , c" -> ["a", "b", "c"]
+```
+
+### maybeEnvStrings
+
+Read an optional comma-separated list:
+
+```typescript
+import { maybeEnvStrings } from "@axel/load-env"
+
+export const FEATURE_FLAGS = maybeEnvStrings("FEATURE_FLAGS")
+
+// Returns string[] | undefined
+if (FEATURE_FLAGS?.includes("new-ui")) {
+  console.log("New UI enabled")
+}
+```
+
+## Error Handling
+
+All functions throw descriptive errors when validation fails:
+
+### Missing Values
+
+```typescript
+import { envString } from "@axel/load-env"
+
+try {
+  const API_KEY = envString("API_KEY")
+} catch (error) {
+  // Error: $API_KEY is missing
+  console.error(error.message)
+}
+```
+
+### Type Validation Errors
+
+```typescript
+import { envInt } from "@axel/load-env"
+
+// PORT=abc
+try {
+  const PORT = envInt("PORT")
+} catch (error) {
+  // TypeError: $PORT is not a number: abc
+  console.error(error.message)
+}
+```
+
+### Enum Validation Errors
+
+```typescript
+import { envEnum } from "@axel/load-env"
+
+// LOG_LEVEL=trace
+try {
+  const LOG_LEVEL = envEnum(
+    "LOG_LEVEL",
+    ["debug", "info", "warn", "error"] as const,
+  )
+} catch (error) {
+  // TypeError: $LOG_LEVEL is not one of debug, info, warn, error: trace
+  console.error(error.message)
+}
+```
+
+## Implementation Details
+
+<Accordion title="How type conversion works">
+  Each function:
+  
+  1. Reads the value from `process.env[key]`
+  2. Trims whitespace from the value
+  3. Falls back to the fallback value if provided
+  4. Throws if the value is undefined and no fallback
+  5. Validates and converts the value to the target type
+  6. Throws a `TypeError` if validation fails
+  
+  Example from the source:
+  
+  ```typescript
+  export function envInt(key: string, fallback?: number): number {
+    const str = process.env[key]?.trim() || fallback?.toString().trim()
+    if (str === undefined) throw new Error(`$${key} is missing`)
+
+    const num = parseInt(str)
+    if (isNaN(num)) throw new TypeError(`$${key} is not a number: ${str}`)
+    return num
+  }
+  ```
+</Accordion>
+
+## Best Practices
+
+### Export Configuration Values
+
+Create a dedicated configuration module:
+
+```typescript
+// config.ts
+import { envString, envInt, envBool, envUrl } from "@axel/load-env"
+
+export const NODE_ENV = envString("NODE_ENV", "development")
+export const PORT = envInt("PORT", 3000)
+export const DATABASE_URL = envUrl("DATABASE_URL")
+export const ENABLE_LOGGING = envBool("ENABLE_LOGGING", true)
+```
+
+Then import from this module throughout your application:
+
+```typescript
+import { PORT, DATABASE_URL } from "./config.js"
+
+const server = createServer()
+server.listen(PORT)
+```
+
+### Use Fallback Values Wisely
+
+<Tabs>
+  <Tab title="Development">
+    Use fallbacks for development convenience:
+    
+    ```typescript
+    export const PORT = envInt("PORT", 3000)
+    export const LOG_LEVEL = envEnum(
+      "LOG_LEVEL",
+      ["debug", "info", "warn", "error"] as const,
+      "debug",
+    )
+    ```
+  </Tab>
+  
+  <Tab title="Production">
+    Require critical values in production:
+    
+    ```typescript
+    // No fallback - fails if missing
+    export const DATABASE_URL = envUrl("DATABASE_URL")
+    export const API_KEY = envString("API_KEY")
+    
+    // Safe fallbacks for non-critical values
+    export const CACHE_TTL = envInt("CACHE_TTL", 3600)
+    ```
+  </Tab>
+</Tabs>
+
+### Type Safety with TypeScript
+
+TypeScript automatically infers the correct types:
+
+```typescript
+import { envInt, envString, maybeEnvBool } from "@axel/load-env"
+
+const PORT = envInt("PORT") // type: number
+const NODE_ENV = envString("NODE_ENV") // type: string
+const DEBUG = maybeEnvBool("DEBUG") // type: boolean | undefined
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Docker Secrets" icon="docker" href="/guides/docker-secrets">
+    Learn how to load secrets from files in Docker environments
+  </Card>
+  
+  <Card title="Type Safety" icon="shield" href="/guides/type-safety">
+    Understand how TypeScript types are enforced throughout the library
+  </Card>
+</CardGroup>

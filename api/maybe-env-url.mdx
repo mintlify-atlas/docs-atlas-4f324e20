@@ -1,0 +1,74 @@
+---
+title: maybeEnvUrl
+description: Load an optional environment variable as a URL
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvUrl(key: string): URL | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`URL | undefined` - A URL object, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+Throws `TypeError` when:
+- The value cannot be parsed as a valid URL
+
+## Example
+
+```typescript
+import { maybeEnvUrl } from "@load-env/core"
+
+// Optional database connection
+export const DATABASE_URL = maybeEnvUrl("DATABASE_URL")
+
+if (DATABASE_URL) {
+  console.log(`Connecting to database at ${DATABASE_URL.hostname}`)
+  await connectToDatabase(DATABASE_URL.href)
+} else {
+  console.log("Using in-memory database")
+}
+
+// Optional Redis URL
+export const REDIS_URL = maybeEnvUrl("REDIS_URL")
+
+const redisClient = REDIS_URL
+  ? createClient({ url: REDIS_URL.href })
+  : createClient() // Uses default localhost connection
+
+// Access URL components
+export const API_URL = maybeEnvUrl("API_URL")
+
+if (API_URL) {
+  console.log(`Protocol: ${API_URL.protocol}`)
+  console.log(`Host: ${API_URL.hostname}`)
+  console.log(`Port: ${API_URL.port}`)
+  console.log(`Path: ${API_URL.pathname}`)
+}
+```
+
+## When to Use
+
+Use `maybeEnvUrl` instead of `envUrl` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- You have a default URL or can operate without it
+
+Use `envUrl` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

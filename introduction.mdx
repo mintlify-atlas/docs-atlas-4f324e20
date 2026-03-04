@@ -1,0 +1,101 @@
+---
+title: Introduction
+description: A standalone implementation of Vite's loadEnv with type-safe environment variable utilities
+---
+
+`@natoboram/load_env` is a standalone implementation of Vite's `loadEnv` function that provides a simple and type-safe way to manage environment variables in your Node.js applications.
+
+## What is Load Env?
+
+Load Env helps you:
+
+- **Load environment variables** from `.env` files automatically
+- **Ensure type safety** with dedicated functions for different data types
+- **Handle secrets** from the filesystem (Docker Compose secrets support)
+- **Provide fallback values** for environment variables
+- **Parse complex types** like URLs, UUIDs, dates, and enums
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Automatic Loading" icon="file-import">
+    Automatically loads `.env` files based on `NODE_ENV` with proper precedence handling
+  </Card>
+  <Card title="Type Safety" icon="shield-check">
+    Type-safe functions for booleans, numbers, strings, URLs, UUIDs, dates, and more
+  </Card>
+  <Card title="Secret Management" icon="lock">
+    Built-in support for Docker Compose secrets and filesystem-based secrets
+  </Card>
+  <Card title="Fallback Support" icon="arrow-rotate-left">
+    Provide default values for environment variables that might not be set
+  </Card>
+</CardGroup>
+
+## How It Works
+
+Load Env follows a simple loading strategy based on `NODE_ENV`:
+
+<Steps>
+  <Step title="Set NODE_ENV">
+    The `NODE_ENV` environment variable determines which `.env` files to load. If not set, it defaults to `development`.
+  </Step>
+  <Step title="Load .env files">
+    Environment variables are loaded in order of precedence:
+    1. `.env.${NODE_ENV}.local` (highest priority)
+    2. `.env.${NODE_ENV}`
+    3. `.env.local`
+    4. `.env` (lowest priority)
+  </Step>
+  <Step title="Merge with process.env">
+    Loaded variables are merged with existing `process.env` values, with `process.env` taking precedence.
+  </Step>
+</Steps>
+
+<Note>
+  `NODE_ENV` must be set in the environment and will **not** be picked up from `.env` files.
+</Note>
+
+## Example Usage
+
+Here's a quick example of how to use Load Env:
+
+```typescript
+import { loadEnv, envString, envInt, envBool } from "@natoboram/load_env"
+
+// Load environment variables from .env files
+await loadEnv()
+
+// Use type-safe functions to access variables
+export const PORT = envInt("PORT", 3000)
+export const DATABASE_URL = envString("DATABASE_URL")
+export const DEBUG = envBool("DEBUG", false)
+```
+
+## When to Use Load Env
+
+<CardGroup cols={2}>
+  <Card title="Node.js Applications" icon="node-js">
+    Perfect for backend applications, CLI tools, and scripts that need environment configuration
+  </Card>
+  <Card title="Docker Deployments" icon="docker">
+    Seamless integration with Docker Compose secrets for secure credential management
+  </Card>
+  <Card title="Multiple Environments" icon="layer-group">
+    Easy management of development, staging, and production configurations
+  </Card>
+  <Card title="Type-Safe Config" icon="code">
+    Applications that benefit from compile-time type checking of configuration values
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install Load Env in your project via npm, yarn, pnpm, or JSR
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get started with a working example in minutes
+  </Card>
+</CardGroup>

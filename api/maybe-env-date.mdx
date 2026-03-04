@@ -1,0 +1,60 @@
+---
+title: maybeEnvDate
+description: Load an optional environment variable as a Date
+---
+
+## Function Signature
+
+```typescript
+function maybeEnvDate(key: string): Date | undefined
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+## Returns
+
+`Date | undefined` - The parsed Date object, or `undefined` if the variable is not set or empty.
+
+## Behavior
+
+Returns `undefined` when:
+- The environment variable is not set
+- The environment variable is an empty string
+- The environment variable contains only whitespace
+
+Throws `TypeError` when:
+- The value cannot be parsed as a valid date
+
+## Example
+
+```typescript
+import { maybeEnvDate } from "@load-env/core"
+
+// Optional end date for a campaign
+export const END_DATE = maybeEnvDate("END_DATE")
+
+if (END_DATE) {
+  console.log(`Campaign ends at: ${END_DATE.toISOString()}")
+  
+  if (Date.now() > END_DATE.getTime()) {
+    console.log("Campaign has ended")
+  }
+} else {
+  console.log("No end date set, campaign runs indefinitely")
+}
+```
+
+## When to Use
+
+Use `maybeEnvDate` instead of `envDate` when:
+- The environment variable is optional
+- You want to handle missing values gracefully with `undefined`
+- The date represents an optional deadline or timestamp
+
+Use `envDate` when:
+- The environment variable is required for your application
+- You want the application to fail fast if the variable is missing

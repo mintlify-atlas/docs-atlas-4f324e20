@@ -1,0 +1,63 @@
+---
+title: envUrl
+description: Obtains an environment variable as a URL
+---
+
+## Signature
+
+```typescript
+function envUrl(key: string, fallback?: URL): URL
+```
+
+Obtains an environment variable as a URL.
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The name of the environment variable to read
+</ParamField>
+
+<ParamField path="fallback" type="URL">
+  Optional fallback URL if the environment variable is not set. If not provided and the variable is missing, an error will be thrown.
+</ParamField>
+
+## Returns
+
+<ResponseField name="URL" type="URL">
+  The parsed URL object from the environment variable or fallback
+</ResponseField>
+
+## Behavior
+
+- Reads the environment variable and trims whitespace
+- Falls back to the string representation of the fallback URL if the variable is not set
+- Throws an error if both the variable and fallback are missing
+- Parses the string value using the `URL` constructor
+- Validates that the value is a valid URL
+- Throws a `TypeError` if the value cannot be parsed as a URL
+
+## Error Handling
+
+- Throws `Error` with message `"$KEY is missing"` when the environment variable is not set and no fallback is provided
+- Throws `TypeError` with message `"$KEY is not a URL: VALUE"` when the value cannot be parsed as a valid URL. The original error is attached as the `cause`.
+
+## Example
+
+```typescript
+import { envUrl } from "@natoboram/load_env"
+
+// With fallback
+export const DATABASE_URL = envUrl(
+  "DATABASE_URL",
+  new URL("http://localhost:5432")
+)
+
+// Without fallback (will throw if not set)
+export const API_URL = envUrl("API_URL")
+
+// Usage examples:
+// DATABASE_URL="https://github.com/NatoBoram/load_env" → URL object
+// DATABASE_URL="http://localhost:3000" → URL object
+// DATABASE_URL="invalid-url" → throws TypeError
+// DATABASE_URL not set → URL("http://localhost:5432") (uses fallback)
+```
